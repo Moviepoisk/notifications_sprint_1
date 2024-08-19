@@ -1,0 +1,39 @@
+services:
+  nginx:
+    image: nginx:1.23.2
+    container_name: Nginx
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - ws_service_network
+    ports:
+      - "80:80"
+    env_file:
+      ../ws_service/.env
+    depends_on:
+      - ws_service
+
+  ws_service:
+    build:
+      context: ../ws_service
+    container_name: WS_Service
+    restart: always
+    networks:
+      - ws_service_network
+    env_file:
+      ../ws_service/.env
+    volumes:
+      - ../ws_service/app:/app
+    ports:
+      - "8765:8765"
+
+  redis:
+    image: "redis:7.2.3-bookworm"
+    container_name: Redis
+    networks:
+      - ws_service_network
+
+networks:
+  ws_service_network:
